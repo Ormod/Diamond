@@ -182,9 +182,15 @@ class InfluxdbHandler(Handler):
                                 "columns": ["time", "value"]})
                     elif self.influxdb_version == "0.9":
                         for path in self.batch:
+                            # Create a hostname tag and a measurement name out of a path like:
+                            # servers.u-c263f124227f4182aa72ff6883529020-i-2778.cpu.total.iowait
+                            split_path = path.split(".")
+                            tags = {"hostname": split_path[1]}
+                            measurement = '_'.join(split_path[2:])
+
                             metrics.append({
-                                "name": path,
-                                "precision": self.time_precision,
+                                "measurement": measurement,
+                                "tags": tags,
                                 "time": self.batch[path][0][0],
                                 "fields": {"value": self.batch[path][0][1]}})
                     # Send data to influxdb
